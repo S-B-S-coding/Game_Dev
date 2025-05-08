@@ -1,0 +1,28 @@
+# Color Constants
+WHITE = (255, 255, 255)  # (r, g, b)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 165, 0)
+BRIGHT_BLUE = (46, 192, 255)
+GREY = (140, 140, 140)
+BROWN = (59, 33, 1)
+DARK_GREEN = (1, 36, 2)
+LIGHT_GREY = (203, 204, 200)
+DARK_GREY = (29, 29, 29)
+GOLD = (162, 136, 1)
+
+BG_COLOR = None
+
+# Frames Per Second
+FPS = 60
+
+# Display parameters
+TILE_SIZE = 32
+DISPLAY_WIDTH = 60*TILE_SIZE
+DISPLAY_HEIGHT = 40*TILE_SIZE
+
+VIEW_WIDTH = 800
+VIEW_HEIGHT = 600
