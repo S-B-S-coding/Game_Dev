@@ -2,7 +2,7 @@ import pygame as pg
 import math
 from settings import *
 import random as rand
-
+# User Character
 class Player(pg.sprite.Sprite):
     def __init__(self, img, x, y, game, groups):
         # pass
@@ -26,12 +26,14 @@ class Player(pg.sprite.Sprite):
 
         self.coin_hit = False
 
+        self.dir = "right"
+
         # create mask for the player
         self.player_mask = pg.mask.from_surface(self.image)
         # self.mask_image = self.player_mask.to_surface() 
 
         self.velo = 5
-
+    # Die when colliding with enemy
     def enemy_collision(self):
         if pg.sprite.spritecollide(self, self.game.enemies, False):
             
@@ -43,33 +45,28 @@ class Player(pg.sprite.Sprite):
 
     # collision detection with masks
     def collidables_collision(self, dir):
-        hits = pg.sprite.spritecollide(self, self.game.collidables, False)
-            
-            # hits = pg.sprite.spritecollide(self, self.game.collidables, False, pg.sprite.collide_mask)
-        # hits = pg.sprite.spritecollide(self, self.game.collidables, False)
-            
-            # if dir == 'x':
-        if hits:
-            if self.x_change > 0:
-                # self.x_change = 0
-                self.x = hits[0].rect.left - self.rect.width# (self.velo + 1)
-            elif self.x_change < 0:
-                # self.x_change = 0
-                self.x = hits[0].rect.right# (self.velo + 1)
-            
-        # if dir == 'y':
-            # if hits:
-            if self.y_change > 0:
-                # self.y_change = 0
-                self.y = hits[0].rect.top - self.rect.height    #(self.velo + 1)
-            elif self.y_change < 0:
-                # self.y_change = 0
-                self.y = hits[0].rect.bottom  #(self.velo + 1)
-            self.y_change = 0
-            self.rect.y = self.y
-            self.x_change = 0
-            self.rect.x = self.x
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.collidables, False)  
+            if hits:
+                if self.x_change > 0:
+                    self.x = hits[0].rect.left - self.rect.width
+                if self.x_change < 0:
+                    self.x = hits[0].rect.right
+                self.x_change = 0
+                self.rect.x = self.x
+        
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.collidables, False) 
+            if hits:
+                if self.y_change > 0:
+                    self.y = hits[0].rect.top - self.rect.height
+                if self.y_change < 0:
+                    self.y = hits[0].rect.bottom
+                self.y_change = 0
+                self.rect.y = self.y
 
+
+    # collect coins
     def coin_collide(self):
         if pg.sprite.spritecollide(self, self.game.coins, False):
             
@@ -77,7 +74,7 @@ class Player(pg.sprite.Sprite):
             if hits:
                 self.coin_hit = True
 
-
+    # movement
     def get_keys(self):
         
 
@@ -87,12 +84,12 @@ class Player(pg.sprite.Sprite):
         # set velo based on key presses
         if keys[pg.K_LEFT]:
             self.now = pg.time.get_ticks()
-
+            self.dir = "left"
             self.x_change = -1 * self.velo
 
         elif keys[pg.K_RIGHT]:
             self.now = pg.time.get_ticks()
-            
+            self.dir = "right"
             self.x_change = self.velo
         
         else:
@@ -100,22 +97,22 @@ class Player(pg.sprite.Sprite):
 
         if keys[pg.K_UP]:
             self.now = pg.time.get_ticks()
-            
+            self.dir = "up"
             self.y_change = -1 * self.velo
 
         elif keys[pg.K_DOWN]:
             self.now = pg.time.get_ticks()
-            
+            self.dir = "down"
             self.y_change = self.velo
 
         else:
             self.y_change = 0
             
 
-        if keys[pg.K_LEFT] and keys[pg.K_RIGHT]:
-            self.x_change = 0
-        if keys[pg.K_UP] and keys[pg.K_DOWN]:
-            self.y_change = 0
+        # if keys[pg.K_LEFT] and keys[pg.K_RIGHT]:
+        #     self.x_change = 0
+        # if keys[pg.K_UP] and keys[pg.K_DOWN]:
+        #     self.y_change = 0
 
         
 
@@ -136,33 +133,27 @@ class Player(pg.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = (self.x, self.y))
         self.player_mask = pg.mask.from_surface(self.image)
         self.mask_image = self.player_mask.to_surface()
-
-    # def collision(self):
         
     def update(self):
+        
         self.get_keys()
 
         # update player location
         self.x += self.x_change
         self.y += self.y_change
-
         
         self.enemy_collision()
 
         self.coin_collide()
-        self.collidables_collision('y')
+        
         
         self.rect.x = self.x
-        # self.collidables_collision('x')
+        self.collidables_collision('x')
         self.rect.y = self.y
+        self.collidables_collision('y')
         
-
         
-
-    
-    
-
-
+# enemy character/s
 class Enemy(pg.sprite.Sprite):
     def __init__(self, img, x, y, game, groups):
         # pass
@@ -175,14 +166,19 @@ class Enemy(pg.sprite.Sprite):
         self.game = game
 
         self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+
         self.rect.x = x
         self.rect.y = y
 
         self.enemy_mask = pg.mask.from_surface(self.image)
 
+    # attack the player when within a certain distance
     def follow_player(self):
         self.distance_to_playerx = self.game.player.rect.x - self.rect.x
         self.distance_to_playery = self.game.player.rect.y - self.rect.y
+
         # find driection vectro (dx, dy) between enemy and player
         self.dirvect = pg.math.Vector2(self.distance_to_playerx, self.distance_to_playery)
         self.dirvect.normalize()
@@ -190,31 +186,46 @@ class Enemy(pg.sprite.Sprite):
         self.dirvect.scale_to_length(self.speed)
         self.rect.move_ip(self.dirvect)
 
-    def collidables_collision(self):  
-        hits = pg.sprite.spritecollide(self, self.game.collidables, False)
-        collide_r = False
-        collide_l = False
-        if hits:
-            if self.rect.right >= self.game.collidable.rect.left:
-                collide_r = True
-            elif self.rect.left <= self.game.collidable.rect.right:
-                collide_l = True
-            if self.rect.top <= self.game.collidable.rect.bottom:
-                self.rect.y += 10
-            elif self.rect.bottom >= self.game.collidable.rect.top:
-                self.rect.y -= 10
-        if collide_r:
-            self.rect.x -= 10
-        elif collide_l:
-            self.rect.x += 10
+    # collide with walls, fences, etc.
+    def collidables_collision(self, dir):  
+        # hits = pg.sprite.spritecollide(self, self.game.collidables, False)
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.collidables, False)  
+            if hits:
+                if self.distance_to_playerx > 0:
+                    self.rect.x = hits[0].rect.left - self.rect.width
+                    self.speed = 0
+                    self.rect.x -= 0.25
+                    self.speed = 2
+                if self.distance_to_playerx < 0:
+                    self.rect.x = hits[0].rect.right
+                    self.speed = 0
+                    self.rect.x += 0.25
+                    self.speed = 2
+        
+        
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.collidables, False) 
+            if hits:
+                if self.distance_to_playery > 0:
+                    self.rect.y = hits[0].rect.top - self.rect.height
+                    self.speed = 0
+                    self.rect.y -= 0.25
+                    self.speed = 2
+                if self.distance_to_playery < 0:
+                    self.rect.y = hits[0].rect.bottom
+                    self.speed = 0
+                    self.rect.y += 0.25
+                    self.speed = 2
 
-                
-    
+
     def update(self):
         self.follow_player()
-        self.collidables_collision()
-
-
+        
+        self.collidables_collision('x') 
+        self.collidables_collision('y')
+        
+        
 
 class Collidables(pg.sprite.Sprite):
     def __init__(self, img, x, y, width, height, groups):
@@ -226,6 +237,7 @@ class Collidables(pg.sprite.Sprite):
 
         self.collidable_mask = pg.mask.from_surface(self.image)
 
+# collectable
 class Coin(pg.sprite.Sprite):
     def __init__(self, img, x, y, game, groups):
         super().__init__(groups)
@@ -239,3 +251,50 @@ class Coin(pg.sprite.Sprite):
         self.rect.y = y
 
         self.collidable_mask = pg.mask.from_surface(self.image)
+
+class Bullet(pg.sprite.Sprite):
+    def __init__(self, screen, x, y, img, dir, game, groups):
+        super().__init__(groups)
+        self.game = game
+        self.x = x
+        self.y = y
+        self.xvelo = 0
+        self.yvelo = 0
+
+        self.dir = dir
+        self.image = pg.transform.scale(img, (TILE_SIZE/2, TILE_SIZE/2))
+        self.rect = self.image.get_rect()
+
+    def shoot(self, dir):
+        if dir == "right":
+            self.xvelo = 5
+        elif dir == "left":
+            self.xvelo = -5
+        if dir == "down":
+            self.yvelo = 5
+        elif dir == "up":
+            self.yvelo = -5
+        self.x += self.xvelo
+        self.y += self.yvelo
+
+    def stop(self):
+        if self.x >= DISPLAY_WIDTH or self.x <= 0 or self.y >= DISPLAY_HEIGHT or self.y <= 0:
+            self.kill
+
+    def collidables_collision(self):
+        hits = pg.sprite.spritecollide(self, self.game.collidables, False)
+        if hits:
+            self.kill()
+    
+    def enemy_collision(self):
+        hits = pg.sprite.spritecollide(self, self.game.enemies, True)
+        if hits:
+            self.kill()
+
+    def update(self):
+        self.shoot(self.dir)
+        self.stop()
+        self.collidables_collision()
+        self.enemy_collision()
+        self.rect.x = self.x
+        self.rect.y = self.y
