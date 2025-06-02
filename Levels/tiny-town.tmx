@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="19" nextobjectid="158">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="19" nextobjectid="160">
  <tileset firstgid="1" source="tiny-town-tilemap.tsx"/>
  <tileset firstgid="133" source="sprites.tsx"/>
  <tileset firstgid="328" source="../../tiny-town-tilemap.tsx"/>
- <objectgroup id="7" name="Sprites" locked="1">
+ <objectgroup id="7" name="Sprites">
   <object id="132" name="Coin" gid="421" x="641" y="477.667" width="16" height="16"/>
   <object id="133" name="Player" gid="133" x="480" y="369" width="16" height="16"/>
   <object id="134" name="Enemy" gid="148" x="720" y="368" width="16" height="16"/>
-  <object id="136" name="NPC" gid="170" x="432" y="351" width="16" height="16"/>
+  <object id="159" name="NPC" gid="238" x="416" y="328" width="16" height="16"/>
  </objectgroup>
- <objectgroup id="17" name="Collidables">
+ <objectgroup id="17" name="Collidables" locked="1">
   <object id="149" name="Fence" x="388.006" y="261.5" width="8.24444" height="132.75"/>
-  <object id="150" name="Fence" x="564.5" y="265.5" width="7.2381" height="124.464"/>
-  <object id="151" name="Fence" x="388" y="258.25" width="183.666" height="12"/>
-  <object id="153" name="Fence" x="500.583" y="387.25" width="71.0952" height="10.3333"/>
+  <object id="150" name="Fence" x="564.5" y="265.5" width="7.49366" height="124.464"/>
+  <object id="151" name="Fence" x="388" y="258.25" width="183.988" height="12"/>
+  <object id="153" name="Fence" x="500.583" y="387.25" width="71.4063" height="10.7444"/>
   <object id="154" name="Enemy_Wall" x="459.75" y="389.417" width="40.6667" height="7"/>
   <object id="155" name="Building" x="448.5" y="290" width="63" height="46"/>
   <object id="157" name="Fence" x="388.008" y="387.167" width="71.9842" height="10.8222"/>
