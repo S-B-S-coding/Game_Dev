@@ -140,12 +140,15 @@ class Game:
           coin_img_rect = self.coin_image.get_rect(center = (VIEW_WIDTH - 40, 20))
           self.screen.blit(self.coin_image, coin_img_rect)
 
+          if self.player_interacting == True:
+               self.npc_menu()
+
           pg.display.flip()
 
      def events(self):
           '''game loop events'''
           for event in pg.event.get():
-          # events to end the game
+               # events to end the game
                if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                     if self.playing:
                          self.playing = False
@@ -156,7 +159,6 @@ class Game:
                     if event.key == pg.K_SPACE and self.starting == False:     
                          bulletx = self.player.rect.centerx
                          bullety = self.player.rect.centery
-
                          if self.player.dir == "up":
                               self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_up, self.player.dir, self, [self.bullets, self.all_sprites])
                          elif self.player.dir == "down":
@@ -165,8 +167,12 @@ class Game:
                               self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_left, self.player.dir, self, [self.bullets, self.all_sprites])
                          elif self.player.dir == "right":
                               self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_right, self.player.dir, self, [self.bullets, self.all_sprites])
-                    # if self.player.interact == True and event.key == pg.K_e:
-                    #      self.player_interacting == True
+                    
+                    # opening and closing npc menu
+                    if self.player.interact == True and event.key == pg.K_e:
+                         self.player_interacting = True
+                    if event.key == pg.K_q:
+                         self.player_interacting = False
                          
 
      def run(self):
@@ -174,12 +180,13 @@ class Game:
           self.playing = True
           self.ending = False
           while self.playing and self.ending == False:
+               
                self.show_start_screen()
                self.clock.tick(FPS)
                self.update()
                self.events()
                self.draw()
-               # self.npc_menu()
+               
                self.game_over_screen()
 
      def show_start_screen(self):
@@ -206,12 +213,9 @@ class Game:
                               self.playing = False
                               self.running = False
 
-     # def npc_menu(self):
-     #      if self.player_interacting == True:
-     #           self.screen = pg.display.set_mode((VIEW_WIDTH, VIEW_HEIGHT))
-     #           self.screen.fill(BLACK)
-     #           pg.draw.rect(self.screen, GREY, [(0, VIEW_HEIGHT//3), (VIEW_WIDTH, 2*VIEW_HEIGHT/3)])
-               
+     def npc_menu(self):
+          pg.draw.rect(self.screen, GREY, [(0, VIEW_HEIGHT//2), (VIEW_WIDTH, VIEW_HEIGHT)])
+
 
      def game_over_screen(self):
           '''the game over screen'''

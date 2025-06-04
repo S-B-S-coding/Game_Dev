@@ -80,12 +80,34 @@ class Player(pg.sprite.Sprite):
                 self.game.balance += 1
 
     # npc collision detection
-    def npc_interact(self):
-        if pg.sprite.spritecollide(self, self.game.coins, False):
+    def npc_interact(self, dir):
+        if pg.sprite.spritecollide(self, self.game.npcs, False):
             
-            hits = pg.sprite.spritecollide(self, self.game.coins, False, pg.sprite.collide_mask)
+            hits = pg.sprite.spritecollide(self, self.game.npcs, False, pg.sprite.collide_mask)
             if hits:
                 self.interact = True
+
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.npcs, False)  
+            if hits:
+                if self.x_change > 0:
+                    self.x = hits[0].rect.left - self.rect.width
+                if self.x_change < 0:
+                    self.x = hits[0].rect.right
+                self.x_change = 0
+                self.rect.x = self.x
+                
+        
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.npcs, False) 
+            if hits:
+                if self.y_change > 0:
+                    self.y = hits[0].rect.top - self.rect.height
+                if self.y_change < 0:
+                    self.y = hits[0].rect.bottom
+                self.y_change = 0
+                self.rect.y = self.y
+                
 
     # movement
     def get_keys(self):
@@ -159,6 +181,10 @@ class Player(pg.sprite.Sprite):
 
         self.coin_collide()
         
+        self.rect.x = self.x
+        self.npc_interact('x')
+        self.rect.y = self.y
+        self.npc_interact('y')
         
         self.rect.x = self.x
         self.collidables_collision('x')
