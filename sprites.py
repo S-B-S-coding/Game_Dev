@@ -86,6 +86,8 @@ class Player(pg.sprite.Sprite):
             hits = pg.sprite.spritecollide(self, self.game.npcs, False, pg.sprite.collide_mask)
             if hits:
                 self.interact = True
+            else:
+                self.interact = False
 
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.npcs, False)  
@@ -96,6 +98,9 @@ class Player(pg.sprite.Sprite):
                     self.x = hits[0].rect.right
                 self.x_change = 0
                 self.rect.x = self.x
+                self.interact = True
+            else:
+                self.interact = False
                 
         
         if dir == 'y':
@@ -107,6 +112,9 @@ class Player(pg.sprite.Sprite):
                     self.y = hits[0].rect.bottom
                 self.y_change = 0
                 self.rect.y = self.y
+                self.interact = True
+            else:
+                self.interact = False
                 
 
     # movement
@@ -170,7 +178,7 @@ class Player(pg.sprite.Sprite):
         self.mask_image = self.player_mask.to_surface()
         
     def update(self):
-        
+        self.interact = False
         self.get_keys()
 
         # update player location
@@ -181,15 +189,15 @@ class Player(pg.sprite.Sprite):
 
         self.coin_collide()
         
-        self.rect.x = self.x
-        self.npc_interact('x')
-        self.rect.y = self.y
-        self.npc_interact('y')
         
         self.rect.x = self.x
         self.collidables_collision('x')
+        self.npc_interact('x')
         self.rect.y = self.y
         self.collidables_collision('y')
+        self.npc_interact('y')
+        
+        
         
 # enemy character/s
 class Enemy(pg.sprite.Sprite):
@@ -331,6 +339,27 @@ class Coin(pg.sprite.Sprite):
 
         self.collidable_mask = pg.mask.from_surface(self.image)
 
+    def keep_coin_outside_collidables(self):
+        if pg.sprite.spritecollide(self, self.game.collidables, False):
+            
+            hits = pg.sprite.spritecollide(self, self.game.collidables, True, pg.sprite.collide_mask)
+            if hits:
+                self.rect.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+                self.rect.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+    
+    def keep_coin_outside_safety(self):
+        if pg.sprite.spritecollide(self, self.game.safety, False):
+            
+            hits = pg.sprite.spritecollide(self, self.game.safety, True, pg.sprite.collide_mask)
+            if hits:
+                self.rect.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+                self.rect.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+    
+    def update(self):
+        self.keep_coin_outside_collidables()
+        self.keep_coin_outside_safety()
+
+
 # used for damage against enemies
 class Bullet(pg.sprite.Sprite):
     def __init__(self, screen, x, y, img, dir, game, groups):
@@ -392,3 +421,14 @@ class NPC(pg.sprite.Sprite):
         self.rect.y = y
 
         self.npc_mask = pg.mask.from_surface(self.image)
+
+
+class Safety(pg.sprite.Sprite):
+    def __init__(self, img, x, y, width, height, groups):
+        super().__init__(groups)
+        self.image = pg.Surface([width, height])
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+        self.safety_mask = pg.mask.from_surface(self.image)

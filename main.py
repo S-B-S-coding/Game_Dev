@@ -44,6 +44,7 @@ class Game:
           self.bullets = pg.sprite.Group()
           self.enemy_walls = pg.sprite.Group()
           self.npcs = pg.sprite.Group()
+          self.safety = pg.sprite.Group()
           
           
           self.score = 0
@@ -95,7 +96,8 @@ class Game:
                               Enemy_Wall(obj.image, obj.x * 2, obj.y * 2, obj.width *2, obj.height * 2, [self.enemy_walls])
                          if obj.name == 'NPC':
                               self.npc = NPC(obj.image, obj.x * 2, obj.y * 2, self, [self.all_sprites, self.npcs])
-
+                         if obj.name == 'Safety':
+                              Safety(obj.image, obj.x * 2, obj.y * 2, obj.width * 2, obj.height * 2, [self.safety])
           
           
 
@@ -215,7 +217,9 @@ class Game:
 
      def npc_menu(self):
           pg.draw.rect(self.screen, GREY, [(0, VIEW_HEIGHT//2), (VIEW_WIDTH, VIEW_HEIGHT)])
-
+          menu_font = pg.font.SysFont("Times New Roman", 20, False, False)
+          menu_text = menu_font.render("Press q to exit", True, WHITE)
+          self.screen.blit(menu_text, (0, VIEW_HEIGHT//2))
 
      def game_over_screen(self):
           '''the game over screen'''
@@ -233,7 +237,7 @@ class Game:
                elif self.time_sec > 60:
                     time_text = time_font.render(f"Time: {self.time_min}:{self.time_sec-(self.time_min * 60)}:{self.time_millisec-(self.time_sec*1000)} mins", True, WHITE)
                time_text_rect = time_text.get_rect(center = (VIEW_WIDTH // 2, 9*VIEW_HEIGHT//20))
-
+               """
                # find best time from all attempts
                if self.best_time_millisec < self.time_millisec:
                     self.best_time_millisec = self.time_millisec
@@ -253,7 +257,7 @@ class Game:
                # restart_font = pg.font.SysFont("Times New Roman", 25, False, False)
                # restart_text = restart_font.render("Press R to restart", True, WHITE)
                # restart_text_rect = restart_text.get_rect(center = (VIEW_WIDTH // 2, 3*VIEW_HEIGHT//5))
-               
+               """
           
                self.screen.fill(BLACK)
 
@@ -261,7 +265,7 @@ class Game:
           while self.ending == True:
                self.screen.blit(end_text, end_text_rect)
                self.screen.blit(time_text, time_text_rect)
-               self.screen.blit(best_time_text, best_time_text_rect)
+               # self.screen.blit(best_time_text, best_time_text_rect)
                # self.screen.blit(restart_text, restart_text_rect)
                pg.display.flip()
 
