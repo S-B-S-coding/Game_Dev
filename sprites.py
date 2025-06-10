@@ -79,6 +79,14 @@ class Player(pg.sprite.Sprite):
                 self.coin_hit = True
                 self.game.balance += 1
 
+    #collect gems
+    def gem_collide(self):
+        if pg.sprite.spritecollide(self, self.game.gems, False):
+            
+            hits = pg.sprite.spritecollide(self, self.game.gems, True, pg.sprite.collide_mask)
+            if hits:
+                self.game.balance += 10
+
     # npc collision detection
     def npc_interact(self, dir):
         if pg.sprite.spritecollide(self, self.game.npcs, False):
@@ -188,7 +196,7 @@ class Player(pg.sprite.Sprite):
         self.enemy_collision()
 
         self.coin_collide()
-        
+        self.gem_collide()
         
         self.rect.x = self.x
         self.collidables_collision('x')
@@ -207,7 +215,7 @@ class Enemy(pg.sprite.Sprite):
 
         self.image = pg.transform.scale(img, (TILE_SIZE, TILE_SIZE))
         
-        self.speed = 4
+        self.speed = 3
 
         self.game = game
 
@@ -231,12 +239,12 @@ class Enemy(pg.sprite.Sprite):
                     self.rect.x = hits[0].rect.left - self.rect.width
                     self.speed = 0
                     self.rect.x -= 0.25
-                    self.speed = 4
+                    self.speed = 3
                 if self.distance_to_playerx < 0:
                     self.rect.x = hits[0].rect.right
                     self.speed = 0
                     self.rect.x += 0.25
-                    self.speed = 4
+                    self.speed = 3
         
         
         if dir == 'y':
@@ -246,12 +254,12 @@ class Enemy(pg.sprite.Sprite):
                     self.rect.y = hits[0].rect.top - self.rect.height
                     self.speed = 0
                     self.rect.y -= 0.25
-                    self.speed = 4
+                    self.speed = 3
                 if self.distance_to_playery < 0:
                     self.rect.y = hits[0].rect.bottom
                     self.speed = 0
                     self.rect.y += 0.25
-                    self.speed = 4
+                    self.speed = 3
         
         # collision with Enemy_Wall sprites
         if dir == 'x':
@@ -261,12 +269,12 @@ class Enemy(pg.sprite.Sprite):
                     self.rect.x = hits[0].rect.left - self.rect.width
                     self.speed = 0
                     self.rect.x -= 0.25
-                    self.speed = 4
+                    self.speed = 3
                 if self.distance_to_playerx < 0:
                     self.rect.x = hits[0].rect.right
                     self.speed = 0
                     self.rect.x += 0.25
-                    self.speed = 4
+                    self.speed = 3
         
         
         if dir == 'y':
@@ -276,12 +284,12 @@ class Enemy(pg.sprite.Sprite):
                     self.rect.y = hits[0].rect.top - self.rect.height
                     self.speed = 0
                     self.rect.y -= 0.25
-                    self.speed = 4
+                    self.speed = 3
                 if self.distance_to_playery < 0:
                     self.rect.y = hits[0].rect.bottom
                     self.speed = 0
                     self.rect.y += 0.25
-                    self.speed = 4
+                    self.speed = 3
 
     # attack the player when within a certain distance
     def follow_player(self):
@@ -299,8 +307,27 @@ class Enemy(pg.sprite.Sprite):
         self.rect.move_ip((self.dirvect[0], 0))
         self.collidables_collision('x')
 
+    def keep_enemy_outside_collidables(self):
+        if pg.sprite.spritecollide(self, self.game.collidables, False):
+            
+            hits = pg.sprite.spritecollide(self, self.game.collidables, False, pg.sprite.collide_mask)
+            if hits:
+                self.rect.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+                self.rect.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+    
+    # keep enemy outside safety wehen respawn
+    def keep_enemy_outside_safety(self):
+        if pg.sprite.spritecollide(self, self.game.safety, False):
+            
+            hits = pg.sprite.spritecollide(self, self.game.safety, False, pg.sprite.collide_mask)
+            if hits:
+                self.rect.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+                self.rect.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+
     def update(self):
         self.follow_player()
+        self.keep_enemy_outside_collidables()
+        self.keep_enemy_outside_safety()
 
 # all objs that stop movement
 class Collidables(pg.sprite.Sprite):
@@ -334,30 +361,34 @@ class Coin(pg.sprite.Sprite):
 
         self.game = game
 
-        self.rect.x = x
-        self.rect.y = y
+        self.x = x
+        self.y = y
+        # self.rect.x = x
+        # self.rect.y = y
 
         self.collidable_mask = pg.mask.from_surface(self.image)
 
     def keep_coin_outside_collidables(self):
         if pg.sprite.spritecollide(self, self.game.collidables, False):
             
-            hits = pg.sprite.spritecollide(self, self.game.collidables, True, pg.sprite.collide_mask)
+            hits = pg.sprite.spritecollide(self, self.game.collidables, False, pg.sprite.collide_mask)
             if hits:
-                self.rect.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
-                self.rect.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+                self.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+                self.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
     
     def keep_coin_outside_safety(self):
         if pg.sprite.spritecollide(self, self.game.safety, False):
             
-            hits = pg.sprite.spritecollide(self, self.game.safety, True, pg.sprite.collide_mask)
+            hits = pg.sprite.spritecollide(self, self.game.safety, False, pg.sprite.collide_mask)
             if hits:
-                self.rect.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
-                self.rect.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+                self.x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+                self.y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
     
     def update(self):
         self.keep_coin_outside_collidables()
         self.keep_coin_outside_safety()
+        self.rect.x = self.x
+        self.rect.y = self.y
 
 
 # used for damage against enemies
@@ -374,6 +405,7 @@ class Bullet(pg.sprite.Sprite):
         self.image = pg.transform.scale(img, (TILE_SIZE/2, TILE_SIZE/2))
         self.rect = self.image.get_rect()
 
+    # find direction for bullet to shoot
     def shoot(self, dir):
         if dir == "right":
             self.xvelo = 8
@@ -386,19 +418,117 @@ class Bullet(pg.sprite.Sprite):
         self.x += self.xvelo
         self.y += self.yvelo
 
+    # kill bullet when off map
     def stop(self):
         if self.x >= DISPLAY_WIDTH or self.x <= 0 or self.y >= DISPLAY_HEIGHT or self.y <= 0:
             self.kill
 
+    # kill bullet when hitting wall
     def collidables_collision(self):
         hits = pg.sprite.spritecollide(self, self.game.collidables, False)
         if hits:
             self.kill()
     
+
+    # kill enemy & spawn gem
     def enemy_collision(self):
         hits = pg.sprite.spritecollide(self, self.game.enemies, True)
         if hits:
             self.kill()
+            self.gem = Gem(self.game.gem_img, self.x, self.y, self.game, [self.game.gems, self.game.all_sprites])
+            
+            rand_x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+            rand_y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+            Enemy(self.game.enemy_img, rand_x, rand_y, self.game, [self.game.all_sprites, self.game.enemies])
+
+    def update(self):
+        self.shoot(self.dir)
+        self.stop()
+        self.collidables_collision()
+        self.enemy_collision()
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+# purchasable form of damaging enemies
+class Traps(pg.sprite.Sprite):
+    def __init__(self, screen, x, y, img, dir, game, groups):
+        super().__init__(groups)
+        self.game = game
+        self.x = x
+        self.y = y
+        self.speed = 8
+
+        self.dir = dir
+        self.image = pg.transform.scale(img, (TILE_SIZE/2, TILE_SIZE/2))
+        self.rect = self.image.get_rect()
+
+
+    # kill enemy & spawn gem
+    def enemy_collision(self):
+        hits = pg.sprite.spritecollide(self, self.game.enemies, True)
+        if hits:
+            self.kill()
+            self.gem = Gem(self.game.gem_img, self.x, self.y, self.game, [self.game.gems, self.game.all_sprites])
+            
+            rand_x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+            rand_y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+            Enemy(self.game.enemy_img, rand_x, rand_y, self.game, [self.game.all_sprites, self.game.enemies])
+
+    def update(self):
+        # self.collidables_collision()
+        self.enemy_collision()
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+# easier form of damaging enemies
+class Fireball(pg.sprite.Sprite):
+    def __init__(self, screen, x, y, img, dir, game, groups):
+        super().__init__(groups)
+        self.game = game
+        self.x = x
+        self.y = y
+        self.xvelo = 0
+        self.yvelo = 0
+
+        self.dir = dir
+        self.image = pg.transform.scale(img, (TILE_SIZE*2, TILE_SIZE*2))
+        self.rect = self.image.get_rect()
+
+    # find direction for bullet to shoot
+    def shoot(self, dir):
+        if dir == "right":
+            self.xvelo = 8
+        elif dir == "left":
+            self.xvelo = -8
+        if dir == "down":
+            self.yvelo = 8
+        elif dir == "up":
+            self.yvelo = -8
+        self.x += self.xvelo
+        self.y += self.yvelo
+
+    # kill bullet when off map
+    def stop(self):
+        if self.x >= DISPLAY_WIDTH or self.x <= 0 or self.y >= DISPLAY_HEIGHT or self.y <= 0:
+            self.kill
+
+    # kill bullet when hitting wall
+    def collidables_collision(self):
+        hits = pg.sprite.spritecollide(self, self.game.collidables, False)
+        if hits:
+            self.kill()
+    
+
+    # kill enemy & spawn gem
+    def enemy_collision(self):
+        hits = pg.sprite.spritecollide(self, self.game.enemies, True)
+        if hits:
+            self.kill()
+            self.gem = Gem(self.game.gem_img, self.x, self.y, self.game, [self.game.gems, self.game.all_sprites])
+            
+            rand_x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+            rand_y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+            Enemy(self.game.enemy_img, rand_x, rand_y, self.game, [self.game.all_sprites, self.game.enemies])
 
     def update(self):
         self.shoot(self.dir)
@@ -422,7 +552,7 @@ class NPC(pg.sprite.Sprite):
 
         self.npc_mask = pg.mask.from_surface(self.image)
 
-
+# safety space away from enemies for player
 class Safety(pg.sprite.Sprite):
     def __init__(self, img, x, y, width, height, groups):
         super().__init__(groups)
@@ -432,3 +562,23 @@ class Safety(pg.sprite.Sprite):
         self.rect.y = y
 
         self.safety_mask = pg.mask.from_surface(self.image)
+
+# collectable that drops from killing enemies
+class Gem(pg.sprite.Sprite):
+    def __init__(self, img, x, y, game, groups):
+        super().__init__(groups)
+        self.image = pg.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+
+        self.rect = self.image.get_rect()
+
+        self.game = game
+
+        self.x = x
+        self.y = y
+
+        self.collidable_mask = pg.mask.from_surface(self.image)
+
+    def update(self):
+        self.rect.x = self.x
+        self.rect.y = self.y
+

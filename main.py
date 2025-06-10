@@ -22,6 +22,9 @@ class Game:
           self.best_time_millisec = 0
           self.best_time_sec = 0
           self.best_time_min = 0
+          self.mouse_pos = pg.mouse.get_pos()
+
+          self.current_gun = "Gun 1"
 
           self.player_interacting = False
 
@@ -45,6 +48,7 @@ class Game:
           self.enemy_walls = pg.sprite.Group()
           self.npcs = pg.sprite.Group()
           self.safety = pg.sprite.Group()
+          self.gems = pg.sprite.Group()
           
           
           self.score = 0
@@ -78,6 +82,8 @@ class Game:
                          if obj.name == 'Enemy':
                               # print(obj.name)
                               self.enemy = Enemy(obj.image, obj.x * 2, obj.y * 2, self, [self.all_sprites, self.enemies])
+                              self.enemy_img = obj.image
+                         
                          if obj.name == 'Building' or obj.name == 'Fence' or obj.name == 'Trees' or obj.name == 'Wall':
                               self.collidable = Collidables(obj.image, obj.x * 2, obj.y * 2, obj.width *2, obj.height * 2, [self.collidables])
                          if obj.name == 'Coin' or self.player.coin_hit == True:
@@ -98,7 +104,12 @@ class Game:
                               self.npc = NPC(obj.image, obj.x * 2, obj.y * 2, self, [self.all_sprites, self.npcs])
                          if obj.name == 'Safety':
                               Safety(obj.image, obj.x * 2, obj.y * 2, obj.width * 2, obj.height * 2, [self.safety])
-          
+                         if obj.name == 'Gem':
+                              self.gem_img = obj.image
+                         if obj.name == 'Trap':
+                              self.trap_img = obj.image
+
+
           
 
           self.run()
@@ -129,9 +140,9 @@ class Game:
           
           font = pg.font.SysFont("Times New Roman", 20, False, False)
           if self.time_sec <= 60:
-               time_text = font.render(f"Time: {self.time_sec}.{self.time_millisec-(self.time_sec*1000)} sec/s", True, WHITE)
+               time_text = font.render(f"Time: {self.time_sec}.{self.time_millisec-(self.time_sec*1000)}", True, WHITE)
           elif self.time_sec > 60:
-               time_text = font.render(f"Time: {self.time_min}:{self.time_sec-(self.time_min * 60)}:{self.time_millisec-(self.time_sec*1000)} mins", True, WHITE)
+               time_text = font.render(f"Time: {self.time_min}:{self.time_sec-(self.time_min * 60)}:{self.time_millisec-(self.time_sec*1000)}", True, WHITE)
           time_text_rect = time_text.get_rect(center = (VIEW_WIDTH // 2, 20))
           self.screen.blit(time_text, time_text_rect)
 
@@ -157,26 +168,52 @@ class Game:
                          self.running = False
 
                if event.type == pg.KEYDOWN:
-                    # firing bullet
+                    # using weapon
                     if event.key == pg.K_SPACE and self.starting == False:     
                          bulletx = self.player.rect.centerx
                          bullety = self.player.rect.centery
-                         if self.player.dir == "up":
-                              self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_up, self.player.dir, self, [self.bullets, self.all_sprites])
-                         elif self.player.dir == "down":
-                              self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_down, self.player.dir, self, [self.bullets, self.all_sprites])
-                         elif self.player.dir == "left":
-                              self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_left, self.player.dir, self, [self.bullets, self.all_sprites])
-                         elif self.player.dir == "right":
-                              self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_right, self.player.dir, self, [self.bullets, self.all_sprites])
+                         # firing bullet of gun 1
+                         if self.current_gun == "Gun 1":
+                              if self.player.dir == "up":
+                                   self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_up, self.player.dir, self, [self.bullets, self.all_sprites])
+                              elif self.player.dir == "down":
+                                   self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_down, self.player.dir, self, [self.bullets, self.all_sprites])
+                              elif self.player.dir == "left":
+                                   self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_left, self.player.dir, self, [self.bullets, self.all_sprites])
+                              elif self.player.dir == "right":
+                                   self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_right, self.player.dir, self, [self.bullets, self.all_sprites])
+                         # leaving traps
+                         elif self.current_gun == "TRAPS":
+                              self.bullet = Traps(self.screen, bulletx, bullety, self.trap_img, self.player.dir, self, [self.bullets, self.all_sprites])
+                         # shooting Fireball
+                         elif self.current_gun == "Fireball":
+                              if self.player.dir == "up":
+                                   self.bullet = Fireball(self.screen, bulletx, bullety, self.bullet_img_up, self.player.dir, self, [self.bullets, self.all_sprites])
+                              elif self.player.dir == "down":
+                                   self.bullet = Fireball(self.screen, bulletx, bullety, self.bullet_img_down, self.player.dir, self, [self.bullets, self.all_sprites])
+                              elif self.player.dir == "left":
+                                   self.bullet = Fireball(self.screen, bulletx, bullety, self.bullet_img_left, self.player.dir, self, [self.bullets, self.all_sprites])
+                              elif self.player.dir == "right":
+                                   self.bullet = Fireball(self.screen, bulletx, bullety, self.bullet_img_right, self.player.dir, self, [self.bullets, self.all_sprites])
                     
                     # opening and closing npc menu
                     if self.player.interact == True and event.key == pg.K_e:
                          self.player_interacting = True
                     if event.key == pg.K_q:
                          self.player_interacting = False
-                         
+               
+               # button interact for NPC purchases
+               if self.player_interacting == True and event.type == pg.MOUSEBUTTONDOWN:
+                    self.mouse_pos = pg.mouse.get_pos()
+                    if self.mouse_pos[1] >= ((2/3) * VIEW_HEIGHT) and self.mouse_pos[1] <= (((2/3) * VIEW_HEIGHT)+100):
+                         if self.mouse_pos[0] >= 100 and self.mouse_pos[0] <= 200  and self.balance >= 100:
+                              self.current_gun = "TRAPS"
+                         # elif self.mouse_pos[0] >= 300 and self.mouse_pos[0] <= 400:
+                         #      self.current_gun = "Gun 3"
+                         elif self.mouse_pos[0] >= 500 and self.mouse_pos[0] <= 600 and self.balance >= 200:
+                              self.current_gun = "Fireball"
 
+                         
      def run(self):
           '''contains the main game loop'''
           self.playing = True
@@ -191,6 +228,7 @@ class Game:
                
                self.game_over_screen()
 
+     # screen which shows only when game begins
      def show_start_screen(self):
           '''the screen to start the game'''
           if self.starting == True:
@@ -215,12 +253,28 @@ class Game:
                               self.playing = False
                               self.running = False
 
+     # NPC interact menu for purchases
      def npc_menu(self):
+          # menu background/screen
           pg.draw.rect(self.screen, GREY, [(0, VIEW_HEIGHT//2), (VIEW_WIDTH, VIEW_HEIGHT)])
           menu_font = pg.font.SysFont("Times New Roman", 20, False, False)
           menu_text = menu_font.render("Press q to exit", True, WHITE)
           self.screen.blit(menu_text, (0, VIEW_HEIGHT//2))
 
+          # buttons for purchasing from NPC
+          pg.draw.rect(self.screen, BLACK, [(100, (2/3) * VIEW_HEIGHT), (100, 100)])
+          pg.draw.rect(self.screen, BLACK, [(500, (2/3) * VIEW_HEIGHT), (100, 100)])
+
+          button_font = pg.font.SysFont("Times New Roman", 15, False, False)
+          button1_text = button_font.render("TRAPS//100 Coins", True, WHITE)
+          button3_text = button_font.render("Fireball//200 Coins", True, WHITE)
+
+          button1_rect = button1_text.get_rect(center = (150, 440))
+          button3_rect = button3_text.get_rect(center = (550, 440))
+
+          self.screen.blit(button1_text, button1_rect)
+          self.screen.blit(button3_text, button3_rect)
+          
      def game_over_screen(self):
           '''the game over screen'''
           if self.ending == True:
