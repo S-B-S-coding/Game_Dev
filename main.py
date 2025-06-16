@@ -24,6 +24,10 @@ class Game:
           self.best_time_min = 0
           self.mouse_pos = pg.mouse.get_pos()
 
+          self.side_weapon = "None"
+
+          self.kill_count = 0
+
           self.current_gun = "Gun 1"
 
           self.player_interacting = False
@@ -127,6 +131,12 @@ class Game:
                Coin(self.coin_image, rand_x, rand_y, self, [self.all_sprites, self.coins])
                self.player.coin_hit = False
 
+          if self.kill_count >= 5:
+               rand_x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
+               rand_y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
+               Enemy(self.enemy_img, rand_x, rand_y, self, [self.all_sprites, self.enemies])
+               self.kill_count = 0
+
      def draw(self):
           '''fill the screen, draw the objects, and flip'''
           self.all_sprites.draw(self.screen)
@@ -134,8 +144,9 @@ class Game:
                self.screen.blit(sprite.image, self.pov.get_view(sprite))
           
           # blit time survived to screen
-          self.time_millisec = pg.time.get_ticks()
-          self.time_sec = int(pg.time.get_ticks()) // 1000
+          self.time = pg.time.get_ticks()
+          self.time_millisec = self.time
+          self.time_sec = int(self.time_millisec) // 1000
           self.time_min = self.time_sec // 60
           
           font = pg.font.SysFont("Times New Roman", 20, False, False)
@@ -158,7 +169,7 @@ class Game:
 
           pg.display.flip()
 
-     def events(self):
+     def events(self): 
           '''game loop events'''
           for event in pg.event.get():
                # events to end the game
@@ -182,9 +193,6 @@ class Game:
                                    self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_left, self.player.dir, self, [self.bullets, self.all_sprites])
                               elif self.player.dir == "right":
                                    self.bullet = Bullet(self.screen, bulletx, bullety, self.bullet_img_right, self.player.dir, self, [self.bullets, self.all_sprites])
-                         # leaving traps
-                         elif self.current_gun == "TRAPS":
-                              self.bullet = Traps(self.screen, bulletx, bullety, self.trap_img, self.player.dir, self, [self.bullets, self.all_sprites])
                          # shooting Fireball
                          elif self.current_gun == "Fireball":
                               if self.player.dir == "up":
@@ -196,6 +204,15 @@ class Game:
                               elif self.player.dir == "right":
                                    self.bullet = Fireball(self.screen, bulletx, bullety, self.bullet_img_right, self.player.dir, self, [self.bullets, self.all_sprites])
                     
+                    # using traps if they've been purchased
+                    if event.key == pg.K_b or event.key == pg.K_e and self.starting == False:     
+                         bulletx = self.player.rect.centerx
+                         bullety = self.player.rect.centery
+                         # leaving traps
+                         if self.side_weapon == "TRAPS":
+                              self.bullet = Traps(self.screen, bulletx, bullety, self.trap_img, self.player.dir, self, [self.bullets, self.all_sprites])
+
+
                     # opening and closing npc menu
                     if self.player.interact == True and event.key == pg.K_e:
                          self.player_interacting = True
@@ -207,11 +224,13 @@ class Game:
                     self.mouse_pos = pg.mouse.get_pos()
                     if self.mouse_pos[1] >= ((2/3) * VIEW_HEIGHT) and self.mouse_pos[1] <= (((2/3) * VIEW_HEIGHT)+100):
                          if self.mouse_pos[0] >= 100 and self.mouse_pos[0] <= 200  and self.balance >= 100:
-                              self.current_gun = "TRAPS"
+                              self.side_weapon = "TRAPS"
+                              self.balance -= 100
                          # elif self.mouse_pos[0] >= 300 and self.mouse_pos[0] <= 400:
                          #      self.current_gun = "Gun 3"
                          elif self.mouse_pos[0] >= 500 and self.mouse_pos[0] <= 600 and self.balance >= 200:
                               self.current_gun = "Fireball"
+                              self.balance -= 200
 
                          
      def run(self):
@@ -324,9 +343,7 @@ class Game:
                pg.display.flip()
 
                for event in pg.event.get():
-                    if event.type == pg.KEYDOWN:
-                         if event.key == pg.K_r:
-                              self.ending = False
+
                     if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                          if self.playing:
                               self.playing = False

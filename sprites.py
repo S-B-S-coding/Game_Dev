@@ -133,12 +133,12 @@ class Player(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
 
         # set velo based on key presses
-        if keys[pg.K_LEFT]:
+        if keys[pg.K_LEFT] or keys[pg.K_a]:
             self.now = pg.time.get_ticks()
             self.dir = "left"
             self.x_change = -1 * self.velo
 
-        elif keys[pg.K_RIGHT]:
+        elif keys[pg.K_RIGHT] or keys[pg.K_d]:
             self.now = pg.time.get_ticks()
             self.dir = "right"
             self.x_change = self.velo
@@ -146,12 +146,12 @@ class Player(pg.sprite.Sprite):
         else:
             self.x_change = 0
 
-        if keys[pg.K_UP]:
+        if keys[pg.K_UP] or keys[pg.K_w]:
             self.now = pg.time.get_ticks()
             self.dir = "up"
             self.y_change = -1 * self.velo
 
-        elif keys[pg.K_DOWN]:
+        elif keys[pg.K_DOWN] or keys[pg.K_s]:
             self.now = pg.time.get_ticks()
             self.dir = "down"
             self.y_change = self.velo
@@ -441,13 +441,15 @@ class Bullet(pg.sprite.Sprite):
             rand_y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
             Enemy(self.game.enemy_img, rand_x, rand_y, self.game, [self.game.all_sprites, self.game.enemies])
 
+            self.game.kill_count += 1
+
     def update(self):
         self.shoot(self.dir)
         self.stop()
         self.collidables_collision()
         self.enemy_collision()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
 
 # purchasable form of damaging enemies
 class Traps(pg.sprite.Sprite):
@@ -473,12 +475,13 @@ class Traps(pg.sprite.Sprite):
             rand_x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
             rand_y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
             Enemy(self.game.enemy_img, rand_x, rand_y, self.game, [self.game.all_sprites, self.game.enemies])
+            self.game.kill_count += 1
 
     def update(self):
         # self.collidables_collision()
         self.enemy_collision()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
 
 # easier form of damaging enemies
 class Fireball(pg.sprite.Sprite):
@@ -529,14 +532,15 @@ class Fireball(pg.sprite.Sprite):
             rand_x = rand.randrange(int((DISPLAY_WIDTH/3) +20), int(DISPLAY_WIDTH-64))
             rand_y = rand.randrange(32, (DISPLAY_HEIGHT - 64))
             Enemy(self.game.enemy_img, rand_x, rand_y, self.game, [self.game.all_sprites, self.game.enemies])
+            self.game.kill_count += 1
 
     def update(self):
         self.shoot(self.dir)
         self.stop()
         self.collidables_collision()
         self.enemy_collision()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
 
 # interactive NPC
 class NPC(pg.sprite.Sprite):
